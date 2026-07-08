@@ -3,18 +3,18 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+
+const API_KEY = process.env.GEMINI_API_KEY;
 
 app.post("/chat", async (req, res) => {
     try {
-        const { message } = req.body;
+        const userMessage = req.body.message;
 
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY,
             {
                 method: "POST",
                 headers: {
@@ -22,40 +22,38 @@ app.post("/chat", async (req, res) => {
                 },
                 body: JSON.stringify({
                     contents: [
-                        {
-                            parts: [
-                                {
-                                    text: `You are Archana AI, a helpful AI assistant specially designed for students. Answer clearly and simply.
+    {
+        parts: [
+            {
+                text: `Tum Archana AI ho. Tumhe Archana ne banaya hai.
+Tum ek smart student study assistant ho aur users ki padhai aur general questions me help karti ho.
+Agar koi puche "tumhe kisne banaya?" to jawab dena:
+"Mujhe Archana ne banaya hai."
 
-User: ${message}`
-                                }
-                            ]
-                        }
-                    ]
+User ka question:
+${userMessage}`
+            }
+        ]
+    }
+]
                 })
             }
         );
 
         const data = await response.json();
 
-        if (data.error) {
-            return res.status(400).json(data);
-        }
+        res.json({
+            reply: data.candidates[0].content.parts[0].text
+        });
 
-        const reply =
-            data.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "Sorry, I couldn't generate a response.";
-
-        res.json({ reply });
-
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.log(error);
         res.status(500).json({
-            reply: "Server Error"
+            reply: "Sorry, kuch error aa gaya."
         });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`✅ Archana AI running at http://localhost:${PORT}`);
+app.listen(3000, () => {
+    console.log("Archana AI server running on port 3000");
 });
