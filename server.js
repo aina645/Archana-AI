@@ -6,6 +6,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -54,6 +55,8 @@ ${userMessage}`
     }
 });
 
-app.listen(3000, () => {
-    console.log("Archana AI server running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Archana AI server running on port ${PORT}`);
 });
